@@ -4,28 +4,26 @@
 
 ## The "Current" Problem
 
-Have you ever encountered the challenge of managing
-a context of related **currently selected entities** in
-a pure Single Page Application (specifically Angular)?
+Have you ever encountered challenges or annoyances with managing
+your Angular application's context of related **currently selected Services entities**?
 
-For instance:
+For instance, managing the state of "current" Service entities that 
+may be nested or even distantly related often results in `$watch`ers being
+used to help guarantee that stale/cached content isn't displayed. `resolve`
+blocks can certainly alleviate this but, in my experience, are difficult to 
+keep DRY in complex and/or large applications.
 
- - When a user logs out, ensure that any entities they selected (and their relevant states) are cleared away
- - Ensuring that only the "relevant" entity is displayed without using the URL or some other canonical source
- - Dangling references to stale and/or cached entities (i.e., a previous user's data shows in one or two places)
-
-Managing the current context is trivial when you're only working
-with a single a disjoint entity (say for instance, a basic User),
-especially when you can determine the correct state from
-a canonical source such as a URL:
+Managing this current context is trivial when you're only working
+with a single disjoint entity (say for instance, a super basic User),
+especially when you can determine the state from a canonical source like a URL:
 
 ```
 http://example.io/user/3449538
 ```
 
-However, modern web applications are generally more complicated
+However, modern web applications are typically more complicated
 and almost always involve multiple relationships and/or hierarchies
-between resource entities.
+between resource and/or Service entities.
 
 For example, a `User` of say a construction portal may be able to generate
 multiple `Sites`, each  which may have multiple `Quotes`. It is often
@@ -57,11 +55,12 @@ you have a couple of idiomatic options:
  * `Provider`, `Service`, or `Factory` (which by design do NOT
 integrate with the `$digest` cycle)
  * Use session storage (same problem as `Provider`)
- * Use `$rootScope` which sacrifices readibility and makes most developers cringe
+ * Use `$rootScope` which sacrifices readibility and, justifiably, makes most developers cringe
 
-These can be tolerable for a while, but pretty much all of these will require the
+These can be tolerated for a while, but pretty much all of these will require the
 use of `$watch` throughout the app in order to guarantee that your data shows
-only the data that is relevant to the user's current selections.
+only the data that is relevant to the user's current selections (at least without forcing a page refresh,
+which in my opinion damages the user experience and the quality of your application).
 
 ---
 
