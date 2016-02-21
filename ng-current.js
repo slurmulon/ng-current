@@ -1,4 +1,4 @@
-;(function() {
+;(function(angular) {
   var mod = angular.module('ng-current', [])
 
   /**
@@ -210,4 +210,4 @@
       })
     }
   })
-})();
+})(angular);
