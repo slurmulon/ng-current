@@ -5,7 +5,7 @@
    * Establishes a relational context that delegates
    * updates (from top to bottom) according to PubSub
    */
-  mod.service('Contexts', function($rootScope) {
+  mod.service('Contexts', function($log, $rootScope) {
     var self = this
 
     /**
@@ -55,6 +55,8 @@
 
             $rootScope.$apply()
           })
+        } else {
+          $log.error('[ng-current.refreshing] failed to find method on service', method)
         }
       }
     }
@@ -89,7 +91,7 @@
             }
           })
         } else {
-          console.error('Cannot use invalid service context', service)
+          $log.error('[ng-current.using] malformed Service context, please ensure you have added `Contexts.register(this)` at the end of this service', service)
         }
       }
     }
@@ -132,7 +134,7 @@
         self.clear(name)
         
         // notify related contexts about your new state
-        this.publish(name, obj)
+        self.publish(name, obj)
       }
     }
 
