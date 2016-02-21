@@ -158,7 +158,8 @@
      * off of that data set (typically used for caching)
      *
      * @param {String} name service name
-     * @returns {Object} configuration object for acquiring context
+     * @param {Object} configuration object for acquiring context
+     * @returns {Object} current service context or `none` if it doesn't exist
      */
     this.currentOr = function(name, config) {
       var none    = config.none
