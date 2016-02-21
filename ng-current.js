@@ -1,4 +1,6 @@
 ;(function(angular) {
+  'use strict'
+
   var mod = angular.module('ng-current', [])
 
   /**
@@ -150,25 +152,34 @@
     
     /**
      * Utility function that provides either the current context (by name)
-     * or return the first object from the source data set if no current exists.
+     * or return the `none` object.
+     *
+     * If a `use` Object is provided, the current context will be based
+     * off of that data set (typically used for caching)
      *
      * @param {String} name service name
-     * @returns {Array} datas data set representing context
+     * @returns {Object} configuration object for acquiring context
      */
-    this.currentOrFirstIn = function(name, datas) {
+    this.currentOr = function(name, config) {
+      var none    = config.none
+      var use     = config.use
       var current = this.current(name)
-      var first   = datas[0]
-      
-      if (!angular.isObject(current)) {
-        return first
+
+      // provide "or" object when no current context exists yet
+      if (!angular.isObject(current) && !angular.isUndefined(none)) {
+        return none
       }
-      
-      return datas.find(function(data) {
-        return angular.equals(data, current)
-      })
+
+      // allow user to define their own source data set (typically cache)
+      // that the current selection is based off of (loose equals)
+      if (use instanceof Array && use.length) {
+        return use.find(function(data) {
+          return angular.equals(data, current)
+        })
+      }
+
+      return current // allows user to provide a current override
     }
-    
-    // TODO - currentOr - allows user to provide custom selection function
 
     /**
      * Subscribes to a specific relation, performing

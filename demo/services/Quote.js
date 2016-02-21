@@ -19,7 +19,7 @@ mod.service('Quote', function(Contexts, Site) {
   
   this.current = function() {
     return Site.current().then(function(site) {
-      return Contexts.currentOrFirstIn('quote', sites.quotes)
+      return Contexts.currentOr('quote', { none : site.quotes[0] }) // provide first by default (TODO - something fancier)
     })
   }
   

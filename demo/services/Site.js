@@ -28,7 +28,7 @@ mod.service('Site', function(Contexts, User) {
   
   this.current = function() {
     return User.current().then(function(user) {
-      return Contexts.currentOrFirstIn('site', user.sites)
+      return Contexts.currentOr('site', { none : user.sites[0] }) // provide first by default (TODO - something fancier)
     })
   }
   

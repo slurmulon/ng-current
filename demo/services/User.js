@@ -75,7 +75,10 @@ mod.service('User', function(Contexts) {
   
   this.current = function() {
     return this.all().then(function(users) {
-      return Contexts.currentOrFirstIn('user', users)
+      return Contexts.currentOr('user', {
+        use  : users,
+        none : users[0]
+      })
     })
   }
   
