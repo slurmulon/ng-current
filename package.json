@@ -1,0 +1,29 @@
+{
+  "name": "ng-current",
+  "version": "1.0.0",
+  "description": "Relational context manager for Angular",
+  "main": "ng-current.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slurmulon/ng-current.git"
+  },
+  "keywords": [
+    "relational",
+    "context",
+    "pub",
+    "sub",
+    "angular"
+  ],
+  "author": "slurmulon",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/slurmulon/ng-current/issues"
+  },
+  "homepage": "https://github.com/slurmulon/ng-current#readme",
+  "devDependencies": {
+    "bower": "^1.7.7"
+  }
+}

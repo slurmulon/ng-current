@@ -1,0 +1,29 @@
+{
+  "name": "ng-current",
+  "description": "Relational context manager for Angular",
+  "main": "ng-current.js",
+  "authors": [
+    "slurmulon"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "relational",
+    "context",
+    "pub",
+    "sub",
+    "angular"
+  ],
+  "homepage": "https://github.com/slurmulon/ng-current",
+  "moduleType": [],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bluebird": "^3.3.1"
+  }
+}
