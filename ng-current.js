@@ -1,4 +1,4 @@
-(function() {
+;(function() {
   var mod = angular.module('ng-current', [])
 
   /**
