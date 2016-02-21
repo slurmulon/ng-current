@@ -27,11 +27,73 @@
     this.register = function(service) {
       this.contexts[service.name] = service.rels || []
       
+      service.refresh = self.refreshing(service)
+      service.use     = self.using(service)
+
       service.constructor.prototype = this.constructor.prototype
       
       $rootScope.current[name] = null
     }
     
+    /**
+     * Creates a generator that allows users to provide
+     * a scope binding function that reacts to service
+     * changes (needs to re-bind when data changes).
+     *
+     * @param {Service} angular service
+     * @returns {Function} instance refresher accepting an own property to react to (method) and a callback (andThen)
+     */
+    this.refreshing = function(service) {
+      return function(method, andThen) {
+        var generator = service[method]
+
+        if (generator instanceof Function) {
+          generator().then(function(data) {
+            andThen(
+              data instanceof Array ? data.map(service.model) : service.model(data)
+            )
+
+            $rootScope.$apply()
+          })
+        }
+      }
+    }
+
+    /**
+     * Creates a scope integration point where changes to the Service
+     * are subscribed to and refreshed. The process is repeated
+     * for any child related Services should they exist.
+     *
+     * Essentially subscribes your scope bindings (and those which are
+     * related via the "rels" chain) to changes to the Service context.
+     *
+     * @param {Service} service angular service
+     * @returns {Function} usage point accepting an own property to react to (method) and a callback (andThen)
+     */
+    this.using = function(service) {
+      return function(method, andThen) {
+        // invoke refresh immediately and then ensure that provided
+        // method is subscribed and refreshed w/ future updates to the service
+        if (service.constructor.prototype === this.constructor.prototype) {
+          service.refresh(method, andThen)
+
+          self.subscribe(service.name, function(data) {
+            service.refresh(method, andThen)
+
+            // delegate subscribed changes to immediate
+            // related contexts (shallow)
+            if (service.rels && service.rels.length) {
+              service.rels.forEach(function(rel) {
+                self.publish(rel, data)
+              })
+            }
+          })
+        } else {
+          console.error('Cannot use invalid service context', service)
+        }
+      }
+    }
+
     /**
      * Clears out a context's current state and then traverses its
      * relationships recursively until all dependent states have
@@ -146,54 +208,6 @@
           throw 'rels must be Strings'
         }
       })
-    }
-    
-    /**
-     * Establishes a scope integration point where user provided
-     * behavior is syncronized with context changes / publications
-     * to the provided service.
-     *
-     * Essentially wraps your component's scope bindings
-     * in a registered context subscription callback.
-     * 
-     * @param {Contexts} service a registered Contexts service
-     * @param {String} method generator method to call on service
-     * @param {Function} andThen behavior to subscribe / synchronize
-     */
-    this.use = function(service, method, andThen) {
-      var refresh = function() {
-        var generator = service[method]
-        
-        if (generator instanceof Function) {
-          generator().then(function(data) {
-            andThen(
-              data instanceof Array ? data.map(service.model) : service.model(data)  
-            )
-            
-            $rootScope.$apply()
-          })
-        }
-      }
-      
-      // invoke refresh immediately and then ensure that provided
-      // method is subscribed and refreshed w/ future updates to the service
-      if (service.constructor.prototype === this.constructor.prototype) {
-        refresh()
-        
-        self.subscribe(service.name, function(data) {
-          refresh()
-          
-          // delegate subscribed changes to immediate
-          // related contexts (shallow)
-          if (service.rels && service.rels.length) {
-            service.rels.forEach(function(rel) {
-              self.publish(rel, data)
-            })
-          }
-        })
-      } else {
-        console.error('Cannot use invalid service context', service)
-      }
     }
   })
 })();

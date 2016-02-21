@@ -5,7 +5,7 @@ mod.directive('siteList', function(Contexts, Site) {
     restrict: 'EA',
     template: '<h1>Sites</h1><li ng-repeat="site in sites">{{site.id}}</li>',
     link: function(scope) {
-      Contexts.use(Site, 'all', function(sites) {
+      Site.use('all', function(sites) {
         scope.sites = sites
       })
     }
@@ -17,7 +17,7 @@ mod.directive('quoteList', function($rootScope, Quote, Contexts) {
     restrict: 'EA',
     template: '<h1>Quotes</h1><li ng-repeat="quote in quotes">{{quote.id}}</li>',
     link: function(scope) {
-      Contexts.use(Quote, 'all', function(quotes) {
+      Quote.use('all', function(quotes) {
         scope.quotes = quotes
       })
     }
