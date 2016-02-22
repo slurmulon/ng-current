@@ -5,9 +5,9 @@
 ## The "Current" Problem
 
 Have you ever encountered challenges or annoyances with managing
-your Angular application's context of related **currently selected Services entities**?
+your Angular application's context of related **currently selected `Service` entities**?
 
-For instance, managing the state of "current" Service entities that 
+For instance, managing the state of "current" `Service` entities that 
 may be nested or even distantly related often results in `$watch`ers being
 used to help guarantee that stale/cached content isn't displayed. `resolve`
 blocks can certainly alleviate this but, in my experience, are difficult to 
@@ -23,7 +23,7 @@ http://example.io/user/3449538
 
 However, modern web applications are typically more complicated
 and almost always involve multiple relationships and/or hierarchies
-between resource and/or Service entities.
+between resource and/or `Service` entities.
 
 For example, a `User` of say a construction portal may be able to generate
 multiple `Sites`, each  which may have multiple `Quotes`. It is often
@@ -64,7 +64,7 @@ which in my opinion damages the user experience and the quality of your applicat
 
 ---
 
-A more detailed description on the challenges involved with SPA applications can be
+More examples on the challenges involved with SPA applications can be
 found in [Gooey's README](https://github.com/slurmulon/gooey). Gooey is a small JS library
 that takes a hierarchical PubSub approach for generic data synchronization and involves
 no polling mechanisms whatsoever unlike Angular's `$digest` cycle.
@@ -82,14 +82,47 @@ By establishing the following properties:
 and then registering the service at the end of your definition:
 
 ```
-// ... name, model, rels
-// ... normal service stuff
+'use strict'
 
-Contexts.register(this)
+mod.service('User', function(Contexts) {
+  var self = this
+  
+  this.name = 'user'            // rel name to use as primary lookup and to establish relations
+  this.rels = ['site', 'quote'] // services that are related to and dependent on this service
+
+  this.model = function(user) {
+    // ... logic for a Service entity
+    return user
+  }
+
+  // arbitrary user defined generator method -
+  // typically something using `$http` or `$resource` with cache
+  this.all = function() {
+    return [{id: 1, name: 'bob', id: 2, name: 'donna'}]
+  }
+
+  // defines how to determine the "current" user -
+  // can be from url, a token, anything!
+  // because I'm lazy, this example simply
+  // returns the first in the array
+  this.current = function() {
+    return this.all().then(function(users) {
+      return Contexts.currentOr('user', {
+        use  : users,
+        none : users[0]
+      })
+    })
+  }
+
+  // required as the final definition of your Service.
+  // registers your Service with the global pool
+  Contexts.register(this)
+})
 ```
 
-your Service can now automatically delegate any relevant updates to it's related Service contexts,
-and those Services will then do the same with their own related Services.
+This `Service` can now automatically delegate any relevant updates to it's related Service contexts,
+and those `Service`s will then do the same with their own related `Service`s (in this case, the `Service`s
+with the context names `site` and `quote`)
 
 To see a working example, check out this [Plunker](http://TODO)
 
