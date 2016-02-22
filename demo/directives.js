@@ -1,6 +1,6 @@
 'use strict'
 
-mod.directive('siteList', function(Contexts, Site) {
+mod.directive('siteList', function(Site) {
   return {
     restrict: 'EA',
     template: '<h1>Sites</h1><li ng-repeat="site in sites">{{site.id}}</li>',
@@ -12,7 +12,7 @@ mod.directive('siteList', function(Contexts, Site) {
   }
 })
 
-mod.directive('quoteList', function($rootScope, Quote, Contexts) {
+mod.directive('quoteList', function(Quote) {
   return {
     restrict: 'EA',
     template: '<h1>Quotes</h1><li ng-repeat="quote in quotes">{{quote.id}}</li>',

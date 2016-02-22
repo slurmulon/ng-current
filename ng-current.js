@@ -55,7 +55,7 @@
               data instanceof Array ? data.map(service.model) : service.model(data)
             )
 
-            $rootScope.$apply()
+            $rootScope.$apply() // TODO - possibly allow user to provide their own scope as a slight optimization
           })
         } else {
           $log.error('[ng-current.refreshing] failed to find method on service', method)
@@ -195,7 +195,7 @@
       return new Promise(function(resolve, reject) {
         $rootScope.$on(rel, function(event, data) {
           resolve(
-            on(data || {})
+            on(data || {}, event)
           )
         })
       })

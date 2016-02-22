@@ -84,7 +84,7 @@ mod.service('User', function(Contexts) {
   
   this.byId = function(id) {
     return this.all().then(function(users) {
-      return _.find(users, {id: id})
+      return _.find(users, { id: id })
     })
   }
   
