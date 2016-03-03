@@ -7,7 +7,7 @@
    * Establishes a relational context that delegates
    * updates (from top to bottom) according to PubSub
    */
-  mod.service('Contexts', function($log, $rootScope) {
+  mod.service('Contexts', function($log, $rootScope, $q) {
     var self = this
 
     /**
@@ -54,8 +54,6 @@
             andThen(
               data instanceof Array ? data.map(service.model) : service.model(data)
             )
-
-            $rootScope.$apply() // TODO - possibly allow user to provide their own scope as a slight optimization
           })
         } else {
           $log.error('[ng-current.refreshing] failed to find method on service', method)
@@ -192,7 +190,7 @@
      * @returns {Promise}
      */
     this.subscribe = function(rel, on) {
-      return new Promise(function(resolve, reject) {
+      return $q(function(resolve, reject) {
         $rootScope.$on(rel, function(event, data) {
           resolve(
             on(data || {}, event)

@@ -1,6 +1,6 @@
 'use strict'
 
-mod.service('User', function(Contexts) {
+mod.service('User', function($q, Contexts) {
   var self = this
   
   this.name = 'user'   // rel name to use as primary lookup and to establish relations
@@ -24,7 +24,7 @@ mod.service('User', function(Contexts) {
 
   this.resource = {
     get: function() {
-      return new Promise(function(resolve) {
+      return $q(function(resolve) {
         // TODO - replace stub with fancier data allocation logic (from api, cache, etc)
         resolve([
           {
