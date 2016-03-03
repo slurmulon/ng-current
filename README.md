@@ -5,16 +5,17 @@
 ## The "Current" Problem
 
 Have you ever encountered challenges or annoyances with managing
-your Angular application's context of related **currently selected `Service` entities**?
+your Angular 1.X application's context of related **currently selected `Service` entities**?
 
-For instance, managing the state of "current" `Service` entities that 
-may be nested or even distantly related often results in `$watch`ers being
-used to help guarantee that stale/cached content isn't displayed. `resolve`
-blocks can certainly alleviate this but, in my experience, are difficult to 
-keep DRY in complex and/or large applications.
+ * Tracking current entities in vanilla `Services`, which by design, doesn't integrate with the `$digest` cycle, often resulting in one or more of the aforementioned issues
+ * Functions getting called excessively on the `$digest` cycle in order to help guarantee the "latest and greatest"
+ * Dangling references to stale data in directives and views
+    - Example: The quote of another user still displaying after you logged out
+ * Needing to use `$watch` to ensure new defaults are selected properly
+    - Example: A user has quotes, and if you switch users but are still viewing quotes, you may need to select a new "current" quote
 
 Managing this current context is trivial when you're only working
-with a single disjoint entity (say for instance, a super basic User),
+with a single disjoint entity (say for instance, an extremely basic `User`),
 especially when you can determine the state from a canonical source like a URL:
 
 ```
@@ -25,8 +26,8 @@ However, modern web applications are typically more complicated
 and almost always involve multiple relationships and/or hierarchies
 between resource and/or `Service` entities.
 
-For example, a `User` of say a construction portal may be able to generate
-multiple `Sites`, each  which may have multiple `Quotes`. It is often
+For example, a `User` of say a construction management portal may be able
+to generate multiple `Sites`, each  which may have multiple `Quotes`. It is often
 the case that one entity of each type may be currently selected in the
 application at a time (like when viewing a specific `Quote`, the others
 are arguably irrelevant).
@@ -66,8 +67,8 @@ which in my opinion damages the user experience and the quality of your applicat
 
 More examples on the challenges involved with SPA applications can be
 found in [Gooey's README](https://github.com/slurmulon/gooey). Gooey is a small JS library
-that takes a hierarchical PubSub approach for generic data synchronization and involves
-no polling mechanisms whatsoever unlike Angular's `$digest` cycle.
+that takes a hierarchical, bi-directional PubSub approach for generic data synchronization
+and involves no polling mechanisms whatsoever.
 
 ## Usage
 
@@ -81,14 +82,14 @@ By establishing the following properties:
 
 and then registering the service at the end of your definition:
 
-```
+```javascript
 'use strict'
 
 mod.service('User', function(Contexts) {
   var self = this
   
   this.name = 'user'            // rel name to use as primary lookup and to establish relations
-  this.rels = ['site', 'quote'] // services that are related to and dependent on this service
+  this.rels = ['site', 'quote'] // services that have an immediate relationship / dependency to this service
 
   this.model = function(user) {
     // ... logic for a Service entity
@@ -98,19 +99,19 @@ mod.service('User', function(Contexts) {
   // arbitrary user defined generator method -
   // typically something using `$http` or `$resource` with cache
   this.all = function() {
-    return [{id: 1, name: 'bob', id: 2, name: 'donna'}]
+    return [
+      {id: 1, name: 'bob'},
+      {id: 2, name: 'donna'}
+    ]
   }
 
   // defines how to determine the "current" user -
   // can be from url, a token, anything!
   // because I'm lazy, this example simply
-  // returns the first in the array
+  // returns the first in the array (`none` property)
   this.current = function() {
     return this.all().then(function(users) {
-      return Contexts.currentOr('user', {
-        use  : users,
-        none : users[0]
-      })
+      return Contexts.currentOr('user', { none : users[0] })
     })
   }
 
@@ -124,5 +125,5 @@ This `Service` can now automatically delegate any relevant updates to it's relat
 and those `Service`s will then do the same with their own related `Service`s (in this case, the `Service`s
 with the context names `site` and `quote`)
 
-To see a working example, check out this [Plunker](http://TODO)
+To see a working example, check out this [Plunker](http://plnkr.co/edit/MsyTZ4?p=info)
 
