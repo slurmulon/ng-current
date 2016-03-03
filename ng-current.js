@@ -39,8 +39,9 @@
     
     /**
      * Creates a generator that allows users to provide
-     * a scope binding function that reacts to service
-     * changes (needs to re-bind when data changes).
+     * a binding function that reacts to a single Service's
+     * changes (in other words, lazy functionality or data 
+     * that needs to re-process when data changes).
      *
      * @param {Service} angular service
      * @returns {Function} instance refresher accepting an own property to react to (method) and a callback (andThen)
@@ -62,12 +63,13 @@
     }
 
     /**
-     * Creates a scope integration point where changes to the Service
-     * are subscribed to and refreshed. The process is repeated
-     * for any child related Services should they exist.
+     * Creates an integration point where changes to the Service
+     * are subscribed to and published hierarchically (single direction, down)
+     * to any child Services. Nested publications occur transparently in their
+     * own respective Services and are not invoked here.
      *
-     * Essentially subscribes your scope bindings (and those which are
-     * related via the "rels" chain) to changes to the Service context.
+     * Generally used for subscribing and synchronizing your scope bindings to changes
+     * that occur in the appropriate Service context tree/sub-tree (single direction, down).
      *
      * @param {Service} service angular service
      * @returns {Function} usage point accepting an own property to react to (method) and a callback (andThen)
@@ -82,8 +84,7 @@
           self.subscribe(service.name, function(data) {
             service.refresh(method, andThen)
 
-            // delegate subscribed changes to immediate
-            // related contexts (shallow)
+            // delegate subscribed changes to immediate related contexts (shallow)
             if (service.rels && service.rels.length) {
               service.rels.forEach(function(rel) {
                 self.publish(rel, data)
@@ -150,34 +151,21 @@
     
     /**
      * Utility function that provides either the current context (by name)
-     * or return the `none` object.
-     *
-     * If a `use` Object is provided, the current context will be based
-     * off of that data set (typically used for caching)
+     * or, if the context has not been established yet, the `none` object.
      *
      * @param {String} name service name
-     * @param {Object} configuration object for acquiring context
+     * @param {Object} none object to use as initial context when none exists yet
      * @returns {Object} current service context or `none` if it doesn't exist
      */
-    this.currentOr = function(name, config) {
-      var none    = config.none
-      var use     = config.use
+    this.currentOr = function(name, none) {
       var current = this.current(name)
 
-      // provide "or" object when no current context exists yet
+      // provide "none" object when no current context exists yet
       if (!angular.isObject(current) && !angular.isUndefined(none)) {
         return none
       }
 
-      // allow user to define their own source data set (typically cache)
-      // that the current selection is based off of (loose equals)
-      if (use instanceof Array && use.length) {
-        return use.find(function(data) {
-          return angular.equals(data, current)
-        })
-      }
-
-      return current // allows user to provide a current override
+      return current
     }
 
     /**

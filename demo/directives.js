@@ -1,6 +1,6 @@
 'use strict'
 
-mod.directive('siteList', function(Site) {
+mod.directive('siteList', function(Contexts, Site) {
   return {
     restrict: 'EA',
     template: '<h1>Sites</h1><li ng-repeat="site in sites">{{site.id}}</li>',
@@ -12,7 +12,7 @@ mod.directive('siteList', function(Site) {
   }
 })
 
-mod.directive('quoteList', function(Quote) {
+mod.directive('quoteList', function($rootScope, Quote, Contexts) {
   return {
     restrict: 'EA',
     template: '<h1>Quotes</h1><li ng-repeat="quote in quotes">{{quote.id}}</li>',
@@ -42,8 +42,6 @@ mod.directive('btnRandSite', function(Site, Contexts) {
           
           return Site.byId(randId).then(function(site) {
             Contexts.select('site', site)
-            
-            return site // so bluebird shuts up
           })
         })
       }
@@ -59,22 +57,18 @@ mod.directive('btnSwitchUser', function(User, Contexts) {
     controller: function($scope) {
       $scope.select = function() { 
         User.all().then(function(users) {
-          var current = Contexts.currentOrFirstIn('user', users)
+          var current = Contexts.currentOr('user', users[0])
           var next = users.filter(function(user) {
             return user.id !== current.id
           })[0]
-          
-          console.log('next user found', next)
         
           if (next) {
+            console.log('next user found', next)
+
             User.byId(next.id).then(function(user) {
               Contexts.select('user', user)
-              
-              return user // so bluebird shuts up
             })
           }
-          
-          return users // so bluebird shuts up
         })
       }
     }
