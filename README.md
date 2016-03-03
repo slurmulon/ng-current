@@ -7,12 +7,12 @@
 Have you ever encountered challenges or annoyances with managing
 your Angular 1.X application's context of related **currently selected `Service` entities**?
 
- * Tracking current entities in vanilla `Services`, which by design, doesn't integrate with the `$digest` cycle, often resulting in one or more of the aforementioned issues
- * Functions getting called excessively on the `$digest` cycle in order to help guarantee the "latest and greatest"
  * Dangling references to stale data in directives and views
     - Example: The quote of another user still displaying after you logged out
  * Needing to use `$watch` to ensure new defaults are selected properly
     - Example: A user has quotes, and if you switch users but are still viewing quotes, you may need to select a new "current" quote
+ * Functions getting called excessively on the `$digest` cycle in order to help guarantee the "latest and greatest"
+ * Tracking current entities in vanilla `Services`, which by design, doesn't integrate with the `$digest` cycle, often resulting in one or more of the aforementioned issues
 
 Managing this current context is trivial when you're only working
 with a single disjoint entity (say for instance, an extremely basic `User`),
