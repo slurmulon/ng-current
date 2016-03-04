@@ -111,7 +111,7 @@ mod.service('User', function(Contexts) {
   // returns the first in the array (`none` property)
   this.current = function() {
     return this.all().then(function(users) {
-      return Contexts.getOr ('user', { none : users[0] })
+      return Contexts.getOr('user', users[0])
     })
   }
 
