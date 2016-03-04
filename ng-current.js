@@ -14,12 +14,12 @@
      * Tracks all context relations
      */
     this.contexts = {}
-    
+
     /**
      * Stores current active state for each registered context (by rel)
      */
     $rootScope.current = {}
-    
+
     /**
      * Registers a service as a context and subscribes the provided
      * service's model to its own changes
@@ -34,7 +34,7 @@
 
       service.constructor.prototype = this.constructor.prototype
       
-      $rootScope.current[name] = null
+      $rootScope.current[name] = {}
     }
     
     /**
@@ -49,6 +49,7 @@
     this.refreshing = function(service) {
       return function(method, andThen) {
         var generator = service[method]
+        var model     = service.model || function(data) { return data }
 
         if (generator instanceof Function) {
           generator().then(function(data) {
@@ -140,7 +141,7 @@
     }
 
     /**
-     * Determines which object is currently used for the current context
+     * Determines which object is currently used for the current Service context
      *
      * @param {String} name service name
      * @returns {Object} currently current state representation of the service
@@ -167,6 +168,12 @@
 
       return current
     }
+
+    /**
+     * Simple succinct aliases for getting current contexts
+     */
+    this.get   = self.current
+    this.getOr = self.currentOr
 
     /**
      * Subscribes to a specific relation, performing
