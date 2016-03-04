@@ -77,7 +77,7 @@ with your already-existant `Service`s non-invasively.
 
 By establishing the following properties:
  * `this.name` (required) a unique name to identify the service (often lowercase version of service)
- * `this.model` (required) pseudo-constructor function that's is refreshed on updates to your Service
+ * `this.model` (optional) pseudo-constructor function that's refreshed on updates to your Service entities
  * `this.rels` (optional) set of related child entities
 
 and then registering the service at the end of your definition:
@@ -111,7 +111,7 @@ mod.service('User', function(Contexts) {
   // returns the first in the array (`none` property)
   this.current = function() {
     return this.all().then(function(users) {
-      return Contexts.currentOr('user', { none : users[0] })
+      return Contexts.getOr ('user', { none : users[0] })
     })
   }
 
@@ -125,5 +125,5 @@ This `Service` can now automatically delegate any relevant updates to it's relat
 and those `Service`s will then do the same with their own related `Service`s (in this case, the `Service`s
 with the context names `site` and `quote`)
 
-To see a working example, check out this [Plunker](http://plnkr.co/edit/MsyTZ4?p=info)
+To see a working example, check out this [Plunker](http://plnkr.co/edit/XlQ9ho?p=preview)
 
