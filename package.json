@@ -6,6 +6,9 @@
   "scripts": {
     "test": "npm test"
   },
+  "browser": {
+    "angular": "./node_modules/angular/angular.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/slurmulon/ng-current.git"
@@ -24,7 +27,9 @@
   },
   "homepage": "https://github.com/slurmulon/ng-current#readme",
   "devDependencies": {
-    "bower": "^1.7.7"
+    "bower": "^1.7.7",
+    "json-loader": "^0.5.4",
+    "ng-annotate-loader": "^0.1.0"
   },
   "dependencies": {
     "angular": "^1.5.3"

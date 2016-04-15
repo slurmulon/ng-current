@@ -1,8 +1,8 @@
 # :radio_button: ng-current
 
-> Relational context manager for Angular
+> Relational context manager for Angular 1.x
 
-## The "Current" Problem
+## Problem
 
 Have you ever encountered challenges or annoyances with managing
 your Angular 1.X application's context of related **currently selected `Service` entities**?
@@ -126,4 +126,21 @@ and those `Service`s will then do the same with their own related `Service`s (in
 with the context names `site` and `quote`)
 
 To see a working example, check out this [Plunker](http://plnkr.co/edit/XlQ9ho?p=preview)
+
+## Installation
+
+`npm install ng-current`
+
+Note that this package is not completely suited yet for NPM. I am still working out packaging issues so that this can work transparently on both client / server as an `angular` module, and without loading `angular` twice.
+
+Until I address this problem, you can still use `require` and `import`:
+
+ES5: `var Current = require('ng-current')`
+ES6: `import Current from 'ng-current'`
+
+but be sure to require `angular` first so that it's accessible to `ng-current`:
+
+`import angular`
+`...`
+`import Current from 'ng-current'`
 
