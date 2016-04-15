@@ -7,7 +7,7 @@
    * Establishes a relational context that delegates
    * updates (from top to bottom) according to PubSub
    */
-  mod.service('Contexts', function($log, $rootScope, $q) {
+  mod.service('Contexts', ['$log', '$rootScope', '$q', function($log, $rootScope, $q) {
     var self = this
 
     /**
@@ -216,7 +216,7 @@
         }
       })
     }
-  })
+  }])
 })(angular)
 
 if (module && exports && module.exports === exports) {

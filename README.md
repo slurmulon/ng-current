@@ -135,8 +135,9 @@ Note that this package is not completely suited yet for NPM. I am still working 
 
 Until I address this problem, you can still use `require` and `import`:
 
-ES5: `var Current = require('ng-current')`
-ES6: `import Current from 'ng-current'`
+**ES5**: `var Current = require('ng-current')`
+
+**ES6**: `import Current from 'ng-current'`
 
 but be sure to require `angular` first so that it's accessible to `ng-current`:
 
