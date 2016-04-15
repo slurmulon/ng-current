@@ -1,6 +1,54 @@
 'use strict'
 
-mod.service('User', function($q, Contexts) {
+mod.config(function($httpBackend) {
+  $httpBackend
+    .when('GET', '/api/user')
+    .respond([
+      {
+        id: 123,
+        email: 'bob@saget.io',
+        banned: true,
+        sites: [
+          {
+            id: 1,
+            quotes: [
+              {id: 10, product: 'loan'}
+            ]
+          },
+          {
+            id: 2,
+            quotes: [
+              {id: 20, product: 'cash'},
+              {id: 21, product: 'loan'}
+            ]
+          },
+        ]
+      },
+      {
+        id: 456,
+        email: 'donna@bagel.io',
+        banned: false,
+        sites: [
+          {
+            id: 3,
+            quotes: [
+              {id: 30, product: 'loan'},
+              {id: 31, product: 'cash'}
+            ]
+          },
+          {
+            id: 4,
+            quotes: [
+              {id: 40, product: 'shark'},
+              {id: 41, product: 'gold'}
+            ]
+          }
+        ]
+      }
+    ], {Token: 'abc-123'})
+})
+
+mod.service('User', function($q, $http, $routeParams, $location, Contexts, Auth) {
   var self = this
   
   this.name = 'user'   // rel name to use as primary lookup and to establish relations
@@ -23,74 +71,36 @@ mod.service('User', function($q, Contexts) {
   }
 
   this.resource = {
+    cache: {},
     get: function() {
       return $q(function(resolve) {
-        // TODO - replace stub with fancier data allocation logic (from api, cache, etc)
-        resolve([
-          {
-            id: 123,
-            email: 'bob@saget.io',
-            banned: true,
-            sites: [
-              {
-                id: 1,
-                quotes: [
-                  {id: 10, product: 'loan'}
-                ]
-              },
-              {
-                id: 2,
-                quotes: [
-                  {id: 20, product: 'cash'},
-                  {id: 21, product: 'loan'}
-                ]
-              },
-            ]
-          },
-          {
-            id: 456,
-            email: 'donna@bagel.io',
-            banned: false,
-            sites: [
-              {
-                id: 3,
-                quotes: [
-                  {id: 30, product: 'loan'},
-                  {id: 31, product: 'cash'}
-                ]
-              },
-              {
-                id: 4,
-                quotes: [
-                  {id: 40, product: 'shark'},
-                  {id: 41, product: 'gold'}
-                ]
-              }
-            ]
-          }
-        ])
+        if (angular.equals({}, self.resource.cache)) {
+          return $http.get('/api/user').then(function(user) {
+            self.resource.cache = [user]
+
+            resolve([user]) // so we don't have to differentiate between one and many (for example purposes only, User.all() isn't very practical in a real app)
+          })
+        }
+        
+        resolve(self.resource.cache)
       })
     }
   }
   
   this.current = function() {
-    return this.all().then(function(users) {
-      return Contexts.currentOr('user', {
-        use  : users,
-        none : users[0]
+    return Auth
+      .current()
+      .then(function() {
+        return Contexts.currentOr('user', users[0])
       })
-    })
+      .catch(function() {
+        $location.path('/login')
+      })
   }
   
   this.byId = function(id) {
     return this.all().then(function(users) {
       return _.find(users, { id: id })
-    })
-  }
-  
-  this.all = function() {
-    return self.resource.get().then(function(users) {
-      return users
     })
   }
   

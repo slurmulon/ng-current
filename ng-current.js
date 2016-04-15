@@ -217,4 +217,8 @@
       })
     }
   })
-})(angular);
+})(angular)
+
+if (module && exports && module.exports === exports) {
+  module.exports = 'ng-current'
+}
