@@ -2,17 +2,25 @@
 
 > Relational context manager for Angular 1.x
 
+## tl;dr
+
+ * :sparkles: Transparently manage the context-based states of your interdependent `Services` and their related components
+ * :art: Non-invasive - choose how to integrate and when to use
+ * :rocket: Fast and efficient - based on PubSub, minimizing the complexity and size of the `$digest` cycle
+
 ## Problem
 
 Have you ever encountered challenges or annoyances with managing
-your Angular 1.X application's context of related **currently selected `Service` entities**?
+your Angular 1.X application's context of related **currently selected `Service` entities**?:
 
  * Dangling references to stale data in directives and views
-    - Example: The quote of another user still displaying after you logged out
+    - Example: The data of the last user still displaying after you re-authenticated as a new user
  * Needing to use `$watch` to ensure new defaults are selected properly
     - Example: A user has quotes, and if you switch users but are still viewing quotes, you may need to select a new "current" quote
  * Functions getting called excessively on the `$digest` cycle in order to help guarantee the "latest and greatest"
- * Tracking current entities in vanilla `Services`, which by design, doesn't integrate with the `$digest` cycle, often resulting in one or more of the aforementioned issues
+ * Needing to "drag along" related user selections across `Services` and other components in order to support state-dependent features that become relevant at a later point
+ * Tracking current entities in vanilla `Services`, which by design, do not integrate with the `$digest` cycle and often result in one or more of the aforementioned issues
+
 
 Managing this current context is trivial when you're only working
 with a single disjoint entity (say for instance, an extremely basic `User`),
@@ -27,7 +35,7 @@ and almost always involve multiple relationships and/or hierarchies
 between resource and/or `Service` entities.
 
 For example, a `User` of say a construction management portal may be able
-to generate multiple `Sites`, each  which may have multiple `Quotes`. It is often
+to generate multiple construction `Sites`, each  which may have multiple `Quotes`. It is often
 the case that one entity of each type may be currently selected in the
 application at a time (like when viewing a specific `Quote`, the others
 are arguably irrelevant).
@@ -48,6 +56,10 @@ http://exaple.io/site/9883748
 In other words, you should only need to know the last entity
 in the chain since all of the others can be inferred from it.
 
+Deriving the other entities in this way can become difficult. For instance, a user can technically visit the page from any other page, and thus the proper state of the new page must be accessible and/or determinable from the state of any page preceding it (assuming all data is loaded asynchronously, satisfying SPA)
+
+Tools such as `angular-ui-router` have some success with alleviating this, but in my experience force the user to be overly verbose with redundant generator methods, and worse of all needing to jump through several hoops in order to make the correct data/state accessible to deeply nested components. This stems from the fact that state (and thus isolated scope-bound instances of Services) is exclusively controlled by the current `URL`, and this often makes supporting contextual features that don't quite fit into the URL scheme difficult and complex.
+
 ### Multiple "Current"s
 
 In order to track the other selected entities (such as `Site` and `Quote`),
@@ -58,14 +70,13 @@ integrate with the `$digest` cycle)
  * Use session storage (same problem as `Provider`)
  * Use `$rootScope` which sacrifices readibility and, justifiably, makes most developers cringe
 
-These can be tolerated for a while, but pretty much all of these will require the
-use of `$watch` throughout the app in order to guarantee that your data shows
-only the data that is relevant to the user's current selections (at least without forcing a page refresh,
-which in my opinion damages the user experience and the quality of your application).
+These can be tolerated for a while, but pretty much all of these will require either the
+use of `$watch` or monolthic controllers throughout the app in order to guarantee that your components show only the data that is relevant to the user's current selections (at least without forcing a page refresh,
+which breaks SPA and in my opinion damages the user experience and quality of your application).
 
 ---
 
-More examples on the challenges involved with SPA applications can be
+More examples on the challenges involved with SPAs can be
 found in [Gooey's README](https://github.com/slurmulon/gooey). Gooey is a small JS library
 that takes a hierarchical, bi-directional PubSub approach for generic data synchronization
 and involves no polling mechanisms whatsoever.
@@ -76,15 +87,16 @@ ng-current allows you to define a hierarchy of related contexts that that synchr
 with your already-existant `Service`s non-invasively.
 
 By establishing the following properties:
- * `this.name` (required) a unique name to identify the service (often lowercase version of service)
+ * `this.name` (**required**) a unique name to identify the service (often lowercase version of service)
  * `this.model` (optional) pseudo-constructor function that's refreshed on updates to your Service entities
- * `this.rels` (optional) set of related child entities
+ * `this.rels` (optional) collection of immediate child entities, order independent
 
 and then registering the service at the end of your definition:
 
 ```javascript
 'use strict'
 
+// inject `Contexts` service which serves as a transparent state orchestrator for our `Service`(s)
 mod.service('User', function(Contexts) {
   var self = this
   
@@ -92,12 +104,20 @@ mod.service('User', function(Contexts) {
   this.rels = ['site', 'quote'] // services that have an immediate relationship / dependency to this service
 
   this.model = function(user) {
-    // ... logic for a Service entity
+    // ... model logic for a single `User` entity
+
+    user.firstName = function() {
+      return user.givenName + ' ' + user.familyName
+    }
+
     return user
   }
 
   // arbitrary user defined generator method -
-  // typically something using `$http` or `$resource` with cache
+  // typically something using `$http` or `$resource` with cache.
+  // multiple users are considered because
+  // more than one user may use the application
+  // in a single window session (asynchronous re-authentication)
   this.all = function() {
     return [
       {id: 1, name: 'bob'},
@@ -108,14 +128,14 @@ mod.service('User', function(Contexts) {
   // defines how to determine the "current" user -
   // can be from url, a token, anything!
   // because I'm lazy, this example simply
-  // returns the first in the array (`none` property)
+  // returns the first in the array
   this.current = function() {
     return this.all().then(function(users) {
       return Contexts.getOr('user', users[0])
     })
   }
 
-  // required as the final definition of your Service.
+  // required as the final statement of your `Service`.
   // registers your Service with the global pool
   Contexts.register(this)
 })
@@ -135,11 +155,17 @@ Note that this package is not completely suited yet for NPM. I am still working 
 
 Until I address this problem, you can still use `require` and `import`:
 
-**ES5**: `var Current = require('ng-current')`
+**ES5**
+```javascript
+var Current = require('ng-current')
+```
 
-**ES6**: `import Current from 'ng-current'`
+**ES6**:
+```javascript
+import Current from 'ng-current'
+```
 
-but be sure to require `angular` first so that it's accessible to `ng-current`:
+but **be sure to require `angular` first** so that it's accessible to `ng-current`:
 
 `import angular`
 `...`

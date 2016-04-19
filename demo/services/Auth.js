@@ -17,7 +17,7 @@ mod.service('Auth', function($q, $http, Contexts) {
   }
 
   this.current = function() {
-    return self.token('fake@email.io', 'pass123').then(function(auth) {
+    return self.token('fake@stub.io', 'pass123').then(function(auth) {
       return Contexts.currentOr('auth', auth)
     })
   }

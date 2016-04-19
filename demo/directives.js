@@ -65,6 +65,12 @@ mod.directive('btnSwitchUser', function(User, Contexts) {
           if (next) {
             console.log('next user found', next)
 
+            // NOTE - you don't have to call User.byId
+            // here, `next` already represents the desired
+            // User object. I am using User.byId to simply
+            // show how you can acquire the state of
+            // **any** context-based entity, not just the
+            // user's "selected".
             User.byId(next.id).then(function(user) {
               Contexts.select('user', user)
             })
