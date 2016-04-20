@@ -24,7 +24,8 @@
   },
   "homepage": "https://github.com/slurmulon/ng-current#readme",
   "devDependencies": {
-    "bower": "^1.7.7"
+    "bower": "^1.7.7",
+    "uglify": "^0.1.5"
   },
   "dependencies": {
     "angular": "^1.5.3"
