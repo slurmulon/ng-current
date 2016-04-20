@@ -5,8 +5,9 @@
 ## tl;dr
 
  * :sparkles: Transparently manage the context-based states of your interdependent `Services` and their related components
- * :art: Non-invasive - choose how to integrate and when to use
- * :rocket: Fast and efficient - based on PubSub, minimizing the complexity and size of the `$digest` cycle
+ * :art: Non-invasive (convention over configuration) - choose how to integrate and when to use
+ * :rocket: Fast, efficient and lazy - based on native PubSub, minimizing the complexity and size of the `$digest` cycle (check out [this post on `$broadcast`](http://www.bennadel.com/blog/2724-scope-broadcast-is-surprisingly-efficient-in-angularjs.htm) for details)
+ * :cloud: Light-weight and simple - just over 200 lines of code and only 1.7KB uglified!
 
 ## Problem
 
@@ -16,7 +17,7 @@ your Angular 1.X application's context of related **currently selected `Service`
  * Dangling references to stale data in directives and views
     - Example: The data of the last user still displaying after you re-authenticated as a new user
  * Needing to use `$watch` to ensure new defaults are selected properly
-    - Example: A user has quotes, and if you switch users but are still viewing quotes, you may need to select a new "current" quote
+    - Example: A user has quotes, and if you switch users but are still viewing quotes (or even a component distantly related to quotes), you will need to select a new "current" quote and ensure that these components are synchronized properly
  * Functions getting called excessively on the `$digest` cycle in order to help guarantee the "latest and greatest"
  * Needing to "drag along" related user selections across `Services` and other components in order to support state-dependent features that become relevant at a later point
  * Tracking current entities in vanilla `Services`, which by design, do not integrate with the `$digest` cycle and often result in one or more of the aforementioned issues
@@ -83,8 +84,8 @@ and involves no polling mechanisms whatsoever.
 
 ## Usage
 
-ng-current allows you to define a hierarchy of related contexts that that synchronize
-with your already-existant `Service`s non-invasively.
+`ng-current` allows you to define a hierarchy of related contexts that that synchronize
+with your already-existant `Service`s and components non-invasively.
 
 By establishing the following properties:
  * `this.name` (**required**) a unique name to identify the service (often lowercase version of service)
@@ -167,7 +168,21 @@ import Current from 'ng-current'
 
 but **be sure to require `angular` first** so that it's accessible to `ng-current`:
 
-`import angular`
-`...`
-`import Current from 'ng-current'`
+```javascript
+import angular
+import Current from 'ng-current'
+```
 
+---
+
+If you aren't using a package tool like `webpack` or `browserify`, then you can of course fall back to the traditional method:
+
+**Full**
+```html
+<script type="text/javascript" src="/node_modules/ng-current/ng-current.js"></script>
+```
+
+**Minified**
+```html
+<script type="text/javascript" src="/node_modules/ng-current/ng-current.min.js"></script>
+```
