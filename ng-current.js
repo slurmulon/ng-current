@@ -124,20 +124,22 @@
      * @param {String} name service name
      * @param {Object} object to use as representation of current state
      */
-    this.select = function(name, obj) {
+    this.select = function(name, data) {
       var old = $rootScope.current[name]
       
       // only publish update if the current value has changed
-      if (!angular.equals(obj, old)) {
-        $rootScope.current[name] = obj
+      if (!angular.equals(data, old)) {
+        $rootScope.current[name] = data
         
         // ensure all related (and stale) rel contexts are
         // cleared when this a new context becomes current
         self.clear(name)
         
         // notify related contexts about your new state
-        self.publish(name, obj)
+        self.publish(name, data)
       }
+
+      return data
     }
 
     /**
@@ -215,6 +217,8 @@
           throw 'rels must be Strings'
         }
       })
+
+      return data
     }
   }])
 })(angular)
