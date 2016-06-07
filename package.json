@@ -4,7 +4,8 @@
   "description": "Relational context manager for Angular",
   "main": "ng-current.js",
   "scripts": {
-    "test": "npm test"
+    "test": "npm test",
+    "ugly": "uglify -s ng-current.js -o ng-current.min.js"
   },
   "repository": {
     "type": "git",
