@@ -52,11 +52,15 @@
         var model     = service.model || function(data) { return data }
 
         if (generator instanceof Function) {
-          generator.call(service).then(function(data) {
-            andThen(
-              data instanceof Array ? data.map(service.model) : service.model(data)
-            )
-          })
+          $q.when(generator.call(service))
+            .then(function(data) {
+              andThen(
+                data instanceof Array ? data.map(service.model, service) : service.model(data)
+              )
+            })
+            .catch(function(error) {
+              $log.error('[ng-current.refreshing] failed to refresh Service integration point', error)
+            })
         } else {
           $log.error('[ng-current.refreshing] failed to find method on service', method)
         }
