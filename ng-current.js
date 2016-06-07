@@ -107,7 +107,7 @@
      * relationships recursively until all dependent states have
      * been cleared as well.
      * 
-     * @param {String} name service name
+     * @param {string} name service name
      */
     this.clear = function(name) {
       (self.contexts[name] || []).forEach(function(rel) {
@@ -125,14 +125,20 @@
      * Establishes a new current context for
      * a service by name/rel and publishes event
      * 
-     * @param {String} name service name
+     * @param {string} name service name
+     * @param {*} data arbitrary data to select
+     * @param {boolean} [applyModel] whether or not to apply model function against data
      * @param {Object} object to use as representation of current state
      */
-    this.select = function(name, data) {
+    this.select = function(name, data, applyModel) {
       var old = $rootScope.current[name]
-      
+
       // only publish update if the current value has changed
       if (!angular.equals(data, old)) {
+        if (applyModel) {
+          data = this.contexts[name].model(data)
+        }
+
         $rootScope.current[name] = data
         
         // ensure all related (and stale) rel contexts are
@@ -149,7 +155,7 @@
     /**
      * Determines which object is currently used for the current Service context
      *
-     * @param {String} name service name
+     * @param {string} name service name
      * @returns {Object} currently current state representation of the service
      */
     this.current = function(name) {
@@ -160,7 +166,7 @@
      * Utility function that provides either the current context (by name)
      * or, if the context has not been established yet, the `none` object.
      *
-     * @param {String} name service name
+     * @param {string} name service name
      * @param {Object} none object to use as initial context when none exists yet
      * @returns {Object} current service context or `none` if it doesn't exist
      */
@@ -186,7 +192,7 @@
      * the user provided behavior whenever a related
      * publication occurs
      * 
-     * @param {String} rel relation to subscribe to
+     * @param {string} rel relation to subscribe to
      * @param {Function} on behavior to invoke on publication
      * @returns {Promise}
      */
@@ -205,7 +211,7 @@
      * If the service has any "rels", publish to those as well.
      * This process does not repeat (shallow)
      * 
-     * @param {String} rel the relation
+     * @param {string} rel the relation
      * @param {Object} data
      */
     this.publish = function(rel, data) {
