@@ -32,7 +32,7 @@
       service.refresh = self.refreshing(service)
       service.use     = self.using(service)
 
-      service.constructor.prototype = this.constructor.prototype
+      service.$$hasContext = true
       
       $rootScope.current[name] = {}
     }
@@ -52,7 +52,7 @@
         var model     = service.model || function(data) { return data }
 
         if (generator instanceof Function) {
-          generator().then(function(data) {
+          generator.call(service).then(function(data) {
             andThen(
               data instanceof Array ? data.map(service.model) : service.model(data)
             )
@@ -79,7 +79,7 @@
       return function(method, andThen) {
         // invoke refresh immediately and then ensure that provided
         // method is subscribed and refreshed w/ future updates to the service
-        if (service.constructor.prototype === this.constructor.prototype) {
+        if (service.$$hasContext) {
           service.refresh(method, andThen)
 
           self.subscribe(service.name, function(data) {
