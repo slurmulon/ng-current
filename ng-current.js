@@ -80,11 +80,13 @@
      * @returns {Function} usage point accepting an own property to react to (method) and a callback (andThen)
      */
     this.using = function(service) {
-      return function(method, andThen) {
+      return function(method, andThen, defer) {
         // invoke refresh immediately and then ensure that provided
         // method is subscribed and refreshed w/ future updates to the service
         if (service.$$hasContext) {
-          service.refresh(method, andThen)
+          if (!defer) {
+            service.refresh(method, andThen)
+          }
 
           self.subscribe(service.name, function(data) {
             service.refresh(method, andThen)
@@ -194,15 +196,10 @@
      * 
      * @param {string} rel relation to subscribe to
      * @param {Function} on behavior to invoke on publication
-     * @returns {Promise}
      */
     this.subscribe = function(rel, on) {
-      return $q(function(resolve, reject) {
-        $rootScope.$on(rel, function(event, data) {
-          resolve(
-            on(data || {}, event)
-          )
-        })
+      $rootScope.$on(rel, function(event, data) {
+        on(data || {}, event)
       })
     }
     
