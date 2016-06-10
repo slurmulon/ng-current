@@ -129,16 +129,17 @@
      * 
      * @param {string} name service name
      * @param {*} data arbitrary data to select
-     * @param {boolean} [applyModel] whether or not to apply model function against data
+     * @param {boolean} [force] publish update even if the data is unchanged
+     * @param {boolean} [model] whether or not to apply model function against data
      * @param {Object} object to use as representation of current state
      */
-    this.select = function(name, data, applyModel) {
+    this.select = function(name, data, force, model) {
       var old = $rootScope.current[name]
 
       // only publish update if the current value has changed
-      if (!angular.equals(data, old)) {
-        if (applyModel) {
-          data = this.contexts[name].model(data)
+      if (!angular.equals(data, old) || force) {
+        if (model) {
+          data = this.contexts[name].model(data) // FIXME - use $rootScope.context instead
         }
 
         $rootScope.current[name] = data
