@@ -9,11 +9,17 @@
    */
   mod.service('Contexts', ['$log', '$rootScope', '$q', function($log, $rootScope, $q) {
     var self = this
+    var noop = function(data) { return data }
 
     /**
      * Tracks all context relations
      */
     this.contexts = {}
+
+    /**
+     * Tracks all context models
+     */
+    this.models = {}
 
     /**
      * Stores current active state for each registered context (by rel)
@@ -27,7 +33,8 @@
      * @param {Object} service typically `this` of the service
      */
     this.register = function(service) {
-      this.contexts[service.name] = service.rels || []
+      this.contexts[service.name] = (service.rels  || [])
+      this.models[service.name]   = (service.model || noop).bind(service)
       
       service.refresh = self.refreshing(service)
       service.use     = self.using(service)
@@ -47,15 +54,15 @@
      * @returns {Function} instance refresher accepting an own property to react to (method) and a callback (andThen)
      */
     this.refreshing = function(service) {
-      return function(method, andThen) {
-        var generator = service[method]
+      return (function(method, andThen) {
+        var generator = method instanceof Function ? method.call(service, service) : service[method].bind(service)
         var model     = service.model || function(data) { return data }
 
         if (generator instanceof Function) {
           $q.when(generator.call(service))
             .then(function(data) {
               andThen(
-                data instanceof Array ? data.map(service.model, service) : service.model(data)
+                data instanceof Array ? data.map(model, service) : model(data)
               )
             })
             .catch(function(error) {
@@ -64,7 +71,7 @@
         } else {
           $log.error('[ng-current.refreshing] failed to find method on service', method)
         }
-      }
+      }).bind(service)
     }
 
     /**
@@ -80,7 +87,7 @@
      * @returns {Function} usage point accepting an own property to react to (method) and a callback (andThen)
      */
     this.using = function(service) {
-      return function(method, andThen, defer) {
+      return (function(method, andThen, defer) {
         // invoke refresh immediately and then ensure that provided
         // method is subscribed and refreshed w/ future updates to the service
         if (service.$$hasContext) {
@@ -101,7 +108,7 @@
         } else {
           $log.error('[ng-current.using] malformed Service context, please ensure you have added `Contexts.register(this)` at the end of this service', service)
         }
-      }
+      }).bind(service)
     }
 
     /**
@@ -139,7 +146,7 @@
       // only publish update if the current value has changed
       if (!angular.equals(data, old) || force) {
         if (model) {
-          data = this.contexts[name].model(data) // FIXME - use $rootScope.context instead
+          data = this.models[name](data) // FIXME - use $rootScope.context instead
         }
 
         $rootScope.current[name] = data
@@ -159,10 +166,13 @@
      * Determines which object is currently used for the current Service context
      *
      * @param {string} name service name
+     * @param {boolean} model whether or not to apply registered service model
      * @returns {Object} currently current state representation of the service
      */
-    this.current = function(name) {
-      return $rootScope.current[name]
+    this.current = function(name, model) {
+      const state = $rootScope.current[name]
+
+      return model === false ? state : this.models[name](state || {})
     }
     
     /**
@@ -171,10 +181,11 @@
      *
      * @param {string} name service name
      * @param {Object} none object to use as initial context when none exists yet
+     * @param {boolean} model whether or not to apply registered service model
      * @returns {Object} current service context or `none` if it doesn't exist
      */
-    this.currentOr = function(name, none) {
-      var current = this.current(name)
+    this.currentOr = function(name, none, model) {
+      var current = this.current(name, model)
 
       // provide "none" object when no current context exists yet
       if (!angular.isObject(current) && !angular.isUndefined(none)) {
