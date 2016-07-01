@@ -7,7 +7,7 @@
  * :sparkles: Transparently manage the context-based states of your interdependent `Services` and their related components
  * :art: Non-invasive (convention over configuration) - choose how to integrate and when to use
  * :rocket: Fast, efficient and lazy - based on native PubSub, minimizing the complexity and size of the `$digest` cycle (check out [this post on `$broadcast`](http://www.bennadel.com/blog/2724-scope-broadcast-is-surprisingly-efficient-in-angularjs.htm) for details)
- * :cloud: Light-weight and simple - just over 200 lines of code and only 1.7KB uglified!
+ * :cloud: Light-weight and simple - just over 200 lines of code and only 1.9KB uglified!
 
 ## Problem
 
@@ -95,17 +95,15 @@ By establishing the following properties:
 and then registering the service at the end of your definition:
 
 ```javascript
-'use strict'
-
 // inject `Contexts` service which serves as a transparent state orchestrator for our `Service`(s)
-mod.service('User', function(Contexts) {
+module.service('User', function(Contexts) {
   var self = this
-  
+
   this.name = 'user'            // rel name to use as primary lookup and to establish relations
   this.rels = ['site', 'quote'] // services that have an immediate relationship / dependency to this service
 
   this.model = function(user) {
-    // ... model logic for a single `User` entity
+    // model logic for a single `User` entity
 
     user.firstName = function() {
       return user.givenName + ' ' + user.familyName
@@ -116,7 +114,7 @@ mod.service('User', function(Contexts) {
 
   // arbitrary user defined generator method -
   // typically something using `$http` or `$resource` with cache.
-  // multiple users are considered because
+  // multiple users are considered here because
   // more than one user may use the application
   // in a single window session (asynchronous re-authentication)
   this.all = function() {
@@ -131,7 +129,7 @@ mod.service('User', function(Contexts) {
   // because I'm lazy, this example simply
   // returns the first in the array
   this.current = function() {
-    return this.all().then(function(users) {
+    return self.all().then(function(users) {
       return Contexts.getOr('user', users[0])
     })
   }
@@ -143,10 +141,72 @@ mod.service('User', function(Contexts) {
 ```
 
 This `Service` can now automatically delegate any relevant updates to it's related Service contexts,
-and those `Service`s will then do the same with their own related `Service`s (in this case, the `Service`s
-with the context names `site` and `quote`).
+and those `Service`s will then do the same with their own related `Service`s.
 
-This also means that any components or directives that inherit these contexts will be synchronized accordingly.
+In our example any updates to `User` will delegate to `Site` and `Contact`, but they will also reach `Quote` beause `Quote` is related to `Site` which is related to `User`:
+
+                                       User
+                                        |
+                         +-----------------------------+
+                         |                             |
+                         v                             v
+                       Site                         Contact
+                         |
+                         |
+                         v
+                       Quote
+
+We must also define `Site`, `Contact` and `Quote` services that resemble `User`, but are of course free to have their own implementations and functionality:
+
+```javascript
+module.service('Site', function(Contexts) {
+  var self = this
+
+  this.name = 'site'
+
+  this.model = function(site) {
+    site.label = function() {
+      return site.street_number + ' ' + site.street_name + ', ' + site.city + ', ' + site.state
+    }
+
+    return site
+  }
+
+  this.all = function() {
+    return [
+      {id: 1, street_number: '123', street_name: 'Magic Way', city: 'San Francisco', state: 'CA' },
+      {id: 2, street_number: '456', street_name: 'JavaS Way', city: 'San Francisco', state: 'CA' }
+    ]
+  }
+
+  this.current = function() {
+    return self.all().then(function(sites) {
+      return Contexts.getOr('site', sites[0])
+    })
+  }
+
+  Contexts.register(this)
+})
+```
+
+Once our `Services` are defined and wired together, any components or directives that inherit their contexts will be synchronized accordingly whenever anything related to the context is published or updated:
+
+```javascript
+module.directive('currentQuote', function(Contexts, Quote, $log) {
+  return {
+    restrict: 'EA',
+    template: '<h1>Selected Quote</h1><p>{{ quote | json }}</p>',
+    controller: function(scope) {
+      // this callback will trigger whenever a new `User`, `Site`, or `Quote` is selected :D
+      Quote.use('current', function(quote) {
+        $log.info('New quote selected', quote)
+
+        scope.quote = quote
+      })
+    }
+  }
+})
+```
 
 To see a working example, check out this [Plunker](http://plnkr.co/edit/XlQ9ho?p=preview).
 
@@ -194,4 +254,3 @@ If you aren't using a package tool like `webpack` or `browserify`, then you can 
 ```html
 <script type="text/javascript" src="/node_modules/ng-current/ng-current.min.js"></script>
 ```
-
