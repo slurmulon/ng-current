@@ -144,9 +144,11 @@ mod.service('User', function(Contexts) {
 
 This `Service` can now automatically delegate any relevant updates to it's related Service contexts,
 and those `Service`s will then do the same with their own related `Service`s (in this case, the `Service`s
-with the context names `site` and `quote`)
+with the context names `site` and `quote`).
 
-To see a working example, check out this [Plunker](http://plnkr.co/edit/XlQ9ho?p=preview)
+This also means that any components or directives that inherit these contexts will be synchronized accordingly.
+
+To see a working example, check out this [Plunker](http://plnkr.co/edit/XlQ9ho?p=preview).
 
 ## Installation
 
@@ -173,6 +175,12 @@ import angular
 import Current from 'ng-current'
 ```
 
+Then add it to your own module:
+
+```javascript
+angular.module('myModule', ['ng-current'])
+```
+
 ---
 
 If you aren't using a package tool like `webpack` or `browserify`, then you can of course fall back to the traditional method:
@@ -186,3 +194,4 @@ If you aren't using a package tool like `webpack` or `browserify`, then you can 
 ```html
 <script type="text/javascript" src="/node_modules/ng-current/ng-current.min.js"></script>
 ```
+
