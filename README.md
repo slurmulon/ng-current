@@ -42,16 +42,16 @@ application at a time (like when viewing a specific `Quote`, the others
 are arguably irrelevant):
 
 ```
-                           User
-                            |
-             +-----------------------------+
-             |                             |
-             v                             v
-           Site                         Contact
-             |
-             |
-             v
-           Quote
+                                 User
+                                  |
+                   +-----------------------------+
+                   |                             |
+                   v                             v
+                 Site                         Contact
+                   |
+                   |
+                   v
+                 Quote
 ```
 
 As an application grows, it typically becomes unorthodox to
@@ -221,7 +221,7 @@ To see a working example, check out this [Plunker](http://plnkr.co/edit/XlQ9ho?p
 var Current = require('ng-current')
 ```
 
-**ES6**:
+**ES6**
 ```javascript
 import Current from 'ng-current'
 ```
