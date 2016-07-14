@@ -62,7 +62,7 @@
           $q.when(generator.call(service))
             .then(function(data) {
               andThen(
-                data instanceof Array ? data.map(model, service) : model(data)
+                data instanceof Array ? data.map.call(service, model, service) : model.call(service, data)
               )
             })
             .catch(function(error) {
