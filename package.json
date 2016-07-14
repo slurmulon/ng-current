@@ -1,6 +1,6 @@
 {
   "name": "ng-current",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Relational context manager for Angular",
   "main": "ng-current.js",
   "scripts": {
