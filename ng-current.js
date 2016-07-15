@@ -60,7 +60,7 @@
     this.refreshing = function(service) {
       return (function(method, andThen) {
         var generator = method instanceof Function ? method.call(service, service) : service[method].bind(service)
-        var model     = service.model || function(data) { return data }
+        var model     = service.model || noop
 
         if (generator instanceof Function) {
           $q.when(generator.call(service))
