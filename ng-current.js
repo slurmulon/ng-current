@@ -35,7 +35,11 @@
     this.register = function(service) {
       this.contexts[service.name] = (service.rels  || [])
       this.models[service.name]   = (service.model || noop).bind(service)
-      
+
+      service.select = function() {
+        return self.select.apply(service, [service.name].concat(Array.prototype.slice.call(arguments)))
+      }
+
       service.refresh = self.refreshing(service)
       service.use     = self.using(service)
 
