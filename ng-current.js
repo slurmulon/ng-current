@@ -174,7 +174,7 @@
      * @returns {Object} currently current state representation of the service
      */
     this.current = function(name, model) {
-      const state = $rootScope.current[name]
+      var state = $rootScope.current[name]
 
       return model === false ? state : this.models[name](state || {})
     }
